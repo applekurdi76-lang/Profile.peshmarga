@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فیرقەی (٩) - انزیبات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f8fafc; }
+        .list-item { transition: all 0.2s; border-right: 5px solid transparent; }
+        .list-item:hover { border-right-color: #ef4444; background-color: #ffffff; transform: translateX(-5px); }
+        .profile-grid div { background: #f1f5f9; padding: 12px; border-radius: 15px; }
+        .label { font-size: 11px; color: #64748b; font-weight: bold; display: block; }
+        .value { font-size: 14px; color: #1e293b; font-weight: 900; }
+        .hidden { display: none !important; }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <header class="bg-slate-900 text-white p-5 shadow-lg border-b-4 border-red-600 flex justify-between items-center shrink-0">
+        <div>
+            <h1 class="text-xl font-black">فیرقەی (٩)ی پیادە</h1>
+            <p class="text-[10px] text-red-500 font-bold uppercase tracking-widest">انزیباتی عەسکەری</p>
+        </div>
+        
+        <button id="loginBtn" onclick="openLogin()" class="bg-slate-700 hover:bg-slate-800 w-12 h-12 rounded-2xl shadow-lg transition flex items-center justify-center">
+            <i class="fas fa-lock text-xl"></i>
+        </button>
+
+        <button id="addBtn" onclick="openForm()" class="hidden bg-red-600 hover:bg-red-700 w-12 h-12 rounded-2xl shadow-lg transition flex items-center justify-center">
+            <i class="fas fa-plus text-xl"></i>
+        </button>
+    </header>
+
+    <div class="p-4 bg-white border-b shrink-0">
+        <div class="relative max-w-2xl mx-auto">
+            <input type="text" id="search" onkeyup="filterList()" placeholder="گەڕان بەدوای ناو یان دۆسیە..." class="w-full p-4 pr-12 rounded-2xl bg-slate-100 border-none focus:ring-2 focus:ring-red-500 outline-none font-bold">
+            <i class="fas fa-search absolute right-4 top-5 text-slate-400"></i>
+        </div>
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-4 custom-scroll" id="mainList">
+        <p class="text-center text-slate-400 mt-10">چاوەڕێبە، داتاکان لە فایربەیسەوە دەهێنرێن...</p>
+    </main>
+
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/90 hidden z-50 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-[40px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="p-6 overflow-y-auto custom-scroll" id="profileContent"></div>
+            
+            <div class="p-4 bg-slate-50 border-t flex flex-col gap-3">
+                <div id="adminActionBox" class="flex gap-3 hidden">
+                    <button id="editBtn" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black">دەستکاریکردن</button>
+                    <button id="deleteBtn" class="flex-1 py-4 bg-red-100 text-red-600 rounded-2xl font-black">سڕینەوە</button>
+                </div>
+                <button onclick="closeModal('profileModal')" class="w-full py-4 bg-slate-200 text-slate-700 rounded-2xl font-black">داخستن</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="formModal" class="fixed inset-0 bg-slate-900/95 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-[40px] p-8 max-h-[90vh] overflow-y-auto custom-scroll">
+            <h3 class="text-2xl font-black mb-6 border-b pb-4">تۆمارکردنی دۆسیە</h3>
+            
+            <div class="flex flex-col items-center mb-6 w-full px-4">
+                <div id="prevBox" class="w-28 h-28 bg-slate-100 rounded-[30px] border-2 border-dashed flex items-center justify-center overflow-hidden mb-2">
+                    <i class="fas fa-camera text-slate-300"></i>
+                </div>
+                <input type="text" id="fImageUrl" placeholder="لینکی وێنە لێرە دابنێ (URL)" class="w-full max-w-sm p-3 bg-slate-50 border rounded-xl text-center font-bold text-sm" oninput="handleImgUrl(this.value)" dir="ltr">
+            </div>
+
+            <input type="hidden" id="fId">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="fName" placeholder="ناوی سیانی" class="md:col-span-2 p-3 bg-slate-50 border rounded-xl font-bold">
+                <input type="text" id="fRank" placeholder="پلە" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fFile" placeholder="ژمارەی دۆسیە" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fPhone" placeholder="مۆبایل" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fUpn" placeholder="UPN" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fBirth" placeholder="ساڵی لەدایکبوون" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fEdu" placeholder="بڕوانامە" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fDept" placeholder="بەش / دەستە" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fLive" placeholder="شوێنی مانەوە" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fHeight" placeholder="باڵا" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fWeight" placeholder="کێش" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fShoe" placeholder="ژمارەی پێڵاو" class="p-3 bg-slate-50 border rounded-xl">
+                <input type="text" id="fSkill" placeholder="شارەزایی" class="p-3 bg-slate-50 border rounded-xl">
+                <textarea id="fNote" placeholder="تێبینی" class="md:col-span-2 p-3 bg-slate-50 border rounded-xl"></textarea>
+            </div>
+            <div id="loadingStatus" class="hidden text-center text-red-600 font-bold mt-4">خەریکی خەزنکردنە...</div>
+            <div class="flex gap-3 mt-8">
+                <button onclick="save()" class="flex-1 py-4 bg-red-600 text-white rounded-2xl font-black">پاشەکەوت</button>
+                <button onclick="closeModal('formModal')" class="flex-1 py-4 bg-slate-100 rounded-2xl">پاشگەزبوونەوە</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/95 hidden z-[70] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[30px] p-8 shadow-2xl text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-700">
+                <i class="fas fa-lock text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-black mb-2 text-slate-800">چوونە ژوورەوەی ئەدمین</h3>
+            <p class="text-xs text-slate-400 mb-6">وشەی نهێنی بنووسە بۆ دەستکاریکردنی دۆسیەکان</p>
+            
+            <input type="password" id="adminPass" placeholder="وشەی نهێنی..." class="w-full p-4 bg-slate-50 border rounded-xl text-center font-bold mb-4" dir="ltr">
+            
+            <div id="loginError" class="hidden text-xs text-red-500 font-bold mb-4">وشەی نهێنی هەڵەیە!</div>
+
+            <div class="flex gap-2">
+                <button id="loginSubmitBtn" onclick="checkLogin()" class="flex-1 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold transition flex justify-center items-center">چوونە ژوورەوە</button>
+                <button onclick="closeModal('loginModal')" class="py-3 px-4 bg-slate-100 text-slate-600 rounded-xl font-bold">داخستن</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // لێرە setDoc زیاد کراوە بۆ دروستکردنی ئۆتۆماتیکی
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgz9dbzedRoyuhbg5lApgCtKF-jZxSozI",
+            authDomain: "srya-inzibat.firebaseapp.com",
+            projectId: "srya-inzibat",
+            storageBucket: "srya-inzibat.firebasestorage.app",
+            messagingSenderId: "919615770372",
+            appId: "1:919615770372:web:2462d0d7e81cb8eae58a51",
+            measurementId: "G-QBF4ZEPGWQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const sariyaCollection = collection(db, "SariyaListDB");
+
+        window.localDb = [];
+        window.tempImg = "";
+        window.isAdmin = false;
+
+        window.closeModal = function(id) { 
+            document.getElementById(id).classList.add('hidden'); 
+            if(id === 'loginModal') {
+                document.getElementById('loginError').classList.add('hidden');
+                document.getElementById('adminPass').value = "";
+            }
+        }
+        
+        window.openLogin = function() {
+            document.getElementById('loginModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('adminPass').focus(), 100);
+        }
+
+        window.checkLogin = async function() {
+            const passInput = document.getElementById('adminPass').value;
+            const btn = document.getElementById('loginSubmitBtn');
+            const errorMsg = document.getElementById('loginError');
+
+            if(!passInput) return;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            try {
+                const docRef = doc(db, "Admin", "Settings");
+                let docSnap = await getDoc(docRef);
+
+                // ئەم بەشە نوێیە: ئەگەر پاسوۆرد نەبوو، با خۆی دروستی بکات
+                if (!docSnap.exists()) {
+                    await setDoc(docRef, { password: "12345" });
+                    docSnap = await getDoc(docRef); // دوای دروستکردن دووبارە دەیهێنێتەوە
+                }
+
+                const realPassword = docSnap.data().password;
+
+                if(passInput === realPassword) {
+                    window.isAdmin = true;
+                    document.getElementById('loginBtn').classList.add('hidden');
+                    document.getElementById('addBtn').classList.remove('hidden');
+                    closeModal('loginModal');
+                    
+                    const actionBox = document.getElementById('adminActionBox');
+                    if(actionBox && !actionBox.classList.contains('hidden')) {
+                        actionBox.classList.remove('hidden');
+                    }
+                    
+                } else {
+                    errorMsg.innerText = "وشەی نهێنی هەڵەیە!";
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch(e) {
+                console.error(e);
+                errorMsg.innerText = "کێشە هەیە! دڵنیابە لە هێڵی ئینتەرنێت.";
+                errorMsg.classList.remove('hidden');
+            }
+
+            btn.innerHTML = 'چوونە ژوورەوە';
+            btn.disabled = false;
+        }
+        
+        window.openForm = function() { 
+            if(!window.isAdmin) return; 
+            document.getElementById('fId').value = "";
+            document.querySelectorAll('#formModal input[type="text"], #formModal textarea').forEach(i => i.value="");
+            document.getElementById('fImageUrl').value = ""; 
+            document.getElementById('prevBox').innerHTML = '<i class="fas fa-camera text-slate-300"></i>';
+            window.tempImg = "";
+            document.getElementById('formModal').classList.remove('hidden'); 
+        }
+
+        window.handleImgUrl = function(url) {
+            window.tempImg = url;
+            const prevBox = document.getElementById('prevBox');
+            
+            if(url && url.trim() !== "") {
+                prevBox.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
+            } else {
+                prevBox.innerHTML = '<i class="fas fa-camera text-slate-300"></i>';
+            }
+        }
+
+        window.save = async function() {
+            if(!window.isAdmin) return;
+            document.getElementById('loadingStatus').classList.remove('hidden');
+            const id = document.getElementById('fId').value;
+            const data = {
+                name: document.getElementById('fName').value, rank: document.getElementById('fRank').value,
+                file: document.getElementById('fFile').value, phone: document.getElementById('fPhone').value,
+                upn: document.getElementById('fUpn').value, birth: document.getElementById('fBirth').value,
+                edu: document.getElementById('fEdu').value, dept: document.getElementById('fDept').value,
+                live: document.getElementById('fLive').value, height: document.getElementById('fHeight').value,
+                weight: document.getElementById('fWeight').value, shoe: document.getElementById('fShoe').value,
+                skill: document.getElementById('fSkill').value, note: document.getElementById('fNote').value,
+                img: window.tempImg
+            };
+
+            try {
+                if(id) {
+                    const docRef = doc(db, "SariyaListDB", id);
+                    await updateDoc(docRef, data);
+                } else {
+                    await addDoc(sariyaCollection, data);
+                }
+                closeModal('formModal');
+                await fetchAndRenderList(); 
+            } catch (e) {
+                console.error("Error saving document: ", e);
+                alert("کێشەیەک ڕوویدا لە پاشەکەوتکردن دڵنیابە لە هێڵی ئینتەرنێتەکەت!");
+            }
+            document.getElementById('loadingStatus').classList.add('hidden');
+        }
+
+        window.fetchAndRenderList = async function() {
+            try {
+                const querySnapshot = await getDocs(sariyaCollection);
+                window.localDb = [];
+                querySnapshot.forEach((doc) => {
+                    window.localDb.push({ id: doc.id, ...doc.data() });
+                });
+                window.filterList();
+            } catch(e) {
+                console.error("Error fetching documents: ", e);
+                document.getElementById('mainList').innerHTML = '<p class="text-center text-red-500 mt-10">کێشەیەک هەیە لە هێنانەوەی داتاکان!</p>';
+            }
+        }
+
+        window.filterList = function() {
+            const q = document.getElementById('search').value.toLowerCase();
+            const list = document.getElementById('mainList');
+            list.innerHTML = "";
+            
+            const filtered = window.localDb.filter(p => p.name.toLowerCase().includes(q));
+            
+            if(filtered.length === 0) {
+                list.innerHTML = '<p class="text-center text-slate-400 mt-10">هیچ دۆسیەیەک نەدۆزرایەوە...</p>';
+                return;
+            }
+
+            filtered.forEach(p => {
+                list.innerHTML += `
+                    <div onclick="showProfile('${p.id}')" class="list-item bg-white p-4 rounded-2xl mb-3 shadow-sm flex items-center gap-4 cursor-pointer">
+                        <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border flex-shrink-0">
+                            ${p.img ? `<img src="${p.img}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-slate-300 p-4"></i>`}
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-black text-slate-800">${p.name}</h3>
+                            <p class="text-xs text-red-500 font-bold">${p.rank} | دۆسیە: ${p.file}</p>
+                        </div>
+                        <i class="fas fa-chevron-left text-slate-300"></i>
+                    </div>
+                `;
+            });
+        }
+
+        window.showProfile = function(id) {
+            const p = window.localDb.find(x => x.id === id);
+            const content = document.getElementById('profileContent');
+            content.innerHTML = `
+                <div class="flex flex-col items-center mb-8">
+                    <div class="w-40 h-40 rounded-[50px] border-4 border-white shadow-2xl overflow-hidden mb-4">
+                        <img src="${p.img || ''}" class="w-full h-full object-cover bg-slate-100" onerror="this.style.display='none'">
+                    </div>
+                    <h2 class="text-2xl font-black text-slate-800">${p.name}</h2>
+                    <span class="bg-red-50 text-red-600 px-4 py-1 rounded-full text-sm font-bold mt-2">${p.rank}</span>
+                </div>
+                <div class="profile-grid grid grid-cols-2 gap-3">
+                    <div><span class="label">ژمارەی دۆسیە</span><span class="value">${p.file || '---'}</span></div>
+                    <div><span class="label">کۆدی UPN</span><span class="value">${p.upn || '---'}</span></div>
+                    <div><span class="label">مۆبایل</span><span class="value">${p.phone || '---'}</span></div>
+                    <div><span class="label">ساڵی لەدایکبوون</span><span class="value">${p.birth || '---'}</span></div>
+                    <div><span class="label">بڕوانامە</span><span class="value">${p.edu || '---'}</span></div>
+                    <div><span class="label">بەش / دەستە</span><span class="value">${p.dept || '---'}</span></div>
+                    <div><span class="label">شوێنی مانەوە</span><span class="value">${p.live || '---'}</span></div>
+                    <div><span class="label">درێژی باڵا</span><span class="value">${p.height || '---'}</span></div>
+                    <div><span class="label">کێشی لەش</span><span class="value">${p.weight || '---'}</span></div>
+                    <div><span class="label">ژمارەی پێڵاو</span><span class="value">${p.shoe || '---'}</span></div>
+                    <div class="col-span-2"><span class="label">شارەزایی</span><span class="value">${p.skill || '---'}</span></div>
+                    <div class="col-span-2 bg-red-50 border border-red-100"><span class="label text-red-400">تێبینی گرنگ</span><span class="value text-red-700">${p.note || 'نییە'}</span></div>
+                </div>
+            `;
+            
+            const actionBox = document.getElementById('adminActionBox');
+            if(window.isAdmin) {
+                actionBox.classList.remove('hidden');
+                document.getElementById('editBtn').onclick = () => editP(p.id);
+                document.getElementById('deleteBtn').onclick = () => deleteP(p.id);
+            } else {
+                actionBox.classList.add('hidden');
+            }
+
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        window.editP = function(id) {
+            if(!window.isAdmin) return;
+            const p = window.localDb.find(x => x.id === id);
+            closeModal('profileModal');
+            document.getElementById('formModal').classList.remove('hidden');
+            document.getElementById('fId').value = p.id;
+            document.getElementById('fName').value = p.name;
+            document.getElementById('fRank').value = p.rank;
+            document.getElementById('fFile').value = p.file;
+            document.getElementById('fPhone').value = p.phone;
+            document.getElementById('fUpn').value = p.upn;
+            document.getElementById('fBirth').value = p.birth;
+            document.getElementById('fEdu').value = p.edu;
+            document.getElementById('fDept').value = p.dept;
+            document.getElementById('fLive').value = p.live;
+            document.getElementById('fHeight').value = p.height;
+            document.getElementById('fWeight').value = p.weight;
+            document.getElementById('fShoe').value = p.shoe;
+            document.getElementById('fSkill').value = p.skill;
+            document.getElementById('fNote').value = p.note;
+            
+            window.tempImg = p.img || "";
+            document.getElementById('fImageUrl').value = window.tempImg;
+            
+            if(window.tempImg) {
+                document.getElementById('prevBox').innerHTML = `<img src="${window.tempImg}" class="w-full h-full object-cover">`;
+            } else {
+                document.getElementById('prevBox').innerHTML = '<i class="fas fa-camera text-slate-300"></i>';
+            }
+        }
+
+        window.deleteP = async function(id) {
+            if(!window.isAdmin) return;
+            if(confirm('دڵنیای لە سڕینەوە؟ ئەمە بە هەمیشەیی دەسڕێتەوە.')) {
+                try {
+                    await deleteDoc(doc(db, "SariyaListDB", id));
+                    closeModal('profileModal');
+                    await fetchAndRenderList();
+                } catch(e) {
+                    console.error("Error deleting document: ", e);
+                    alert("هەڵەیەک ڕوویدا لە کاتی سڕینەوەدا!");
+                }
+            }
+        }
+
+        document.getElementById("adminPass").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                window.checkLogin();
+            }
+        });
+
+        fetchAndRenderList();
+    </script>
+</body>
+</html>
