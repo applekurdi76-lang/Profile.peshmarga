@@ -8,34 +8,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
-        body { font-family: 'Vazirmatn', sans-serif; background-color: #f1f5f9; }
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f8fafc; }
         .hidden { display: none !important; }
-        .profile-img { width: 100px; height: 100px; border-radius: 30px; object-fit: cover; border: 3px solid white; shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        /* Profile Image Styles */
+        .profile-img-box { width: 130px; height: 130px; margin: 0 auto; position: relative; }
+        .profile-img { width: 100%; height: 100%; border-radius: 40px; object-fit: cover; border: 5px solid white; shadow: 0 15px 30px rgba(0,0,0,0.15); background: #e2e8f0; display: block; }
+        
+        /* Wallet Design */
+        .wallet-card { 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 30px;
+            padding: 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .wallet-card::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
+            background: rgba(255,255,255,0.03); border-radius: 50%;
+        }
+        .chip { width: 45px; height: 35px; background: linear-gradient(135deg, #fde047, #ca8a04); border-radius: 8px; margin-bottom: 20px; position: relative; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
     <nav class="bg-slate-900 text-white px-5 py-4 shadow-xl border-b-4 border-red-600 flex justify-between items-center z-50">
-        <div class="flex items-center gap-3">
-            <h1 class="font-black text-lg italic">فیرقەی (٩)</h1>
+        <h1 class="font-black text-lg italic">فیرقەی (٩)</h1>
+        <div id="adminPanel" class="hidden flex gap-2">
+            <button onclick="openManageFields()" class="w-10 h-10 bg-blue-600 rounded-xl shadow-lg"><i class="fas fa-cog"></i></button>
+            <button onclick="openForm()" class="w-10 h-10 bg-red-600 rounded-xl shadow-lg"><i class="fas fa-plus"></i></button>
+            <button onclick="logout()" class="w-10 h-10 bg-orange-600 rounded-xl shadow-lg"><i class="fas fa-sign-out-alt"></i></button>
         </div>
-        <div class="flex gap-2">
-            <div id="adminPanel" class="hidden flex gap-2">
-                <button onclick="openManageFields()" class="w-10 h-10 bg-blue-600 text-white rounded-xl shadow-lg"><i class="fas fa-cog"></i></button>
-                <button onclick="openForm()" class="w-10 h-10 bg-red-600 text-white rounded-xl shadow-lg"><i class="fas fa-plus"></i></button>
-                <button onclick="logout()" class="w-10 h-10 bg-orange-600 text-white rounded-xl shadow-lg"><i class="fas fa-sign-out-alt"></i></button>
-            </div>
-            <button id="loginBtn" onclick="openLogin()" class="w-10 h-10 bg-slate-800 text-slate-400 rounded-xl"><i class="fas fa-lock"></i></button>
-        </div>
+        <button id="loginBtn" onclick="openLogin()" class="w-10 h-10 bg-slate-800 text-slate-400 rounded-xl"><i class="fas fa-lock"></i></button>
     </nav>
 
     <div class="bg-white p-4 shadow-sm border-b flex flex-col sm:flex-row gap-3">
         <div class="relative flex-1">
             <i class="fas fa-search absolute right-3 top-3.5 text-slate-400"></i>
-            <input type="text" id="search" onkeyup="filterList()" placeholder="گەڕان بەدوای ناو یان دۆسیە..." 
-                   class="w-full p-3 pr-10 bg-slate-100 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-red-500 transition-all">
+            <input type="text" id="search" onkeyup="filterList()" placeholder="گەڕان بەدوای ناو یان دۆسیە..." class="w-full p-3 pr-10 bg-slate-100 rounded-2xl outline-none font-bold focus:ring-2 focus:ring-red-500">
         </div>
-        <select id="platoonFilter" onchange="filterList()" class="p-3 bg-slate-100 rounded-2xl font-black text-sm outline-none cursor-pointer border-r-4 border-red-500">
+        <select id="platoonFilter" onchange="filterList()" class="p-3 bg-slate-100 rounded-2xl font-black text-sm border-r-4 border-red-500">
             <option value="all">هەموو دەستەکان</option>
             <option value="دەستەی ١">دەستەی ١</option>
             <option value="دەستەی ٢">دەستەی ٢</option>
@@ -44,71 +59,25 @@
         </select>
     </div>
 
-    <main class="flex-1 overflow-y-auto p-4" id="mainList">
-        <div class="text-center mt-10 text-slate-400 animate-pulse font-bold">باردەکرێت...</div>
-    </main>
+    <main class="flex-1 overflow-y-auto p-4" id="mainList"></main>
 
-    <div id="profileModal" class="fixed inset-0 bg-slate-100 hidden z-[60] flex flex-col">
+    <div id="profileModal" class="fixed inset-0 bg-slate-50 hidden z-[100] flex flex-col">
         <div class="bg-white p-5 shadow-sm border-b flex justify-between items-center">
-            <button onclick="closeModal('profileModal')" class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600"><i class="fas fa-arrow-right"></i></button>
-            <h3 class="font-black">زانیاری پرۆفایل</h3>
+            <button onclick="closeModal('profileModal')" class="w-10 h-10 bg-slate-100 rounded-xl text-slate-600"><i class="fas fa-arrow-right"></i></button>
+            <h3 class="font-black">ناسنامەی ئەلیکترۆنی</h3>
             <div class="w-10"></div>
         </div>
         <div id="profileContent" class="flex-1 overflow-y-auto p-6"></div>
         <div id="profileActions" class="p-5 bg-white border-t flex gap-3"></div>
     </div>
 
-    <div id="fieldsModal" class="fixed inset-0 bg-slate-900/95 hidden z-[100] flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-md rounded-[35px] p-8 shadow-2xl">
-            <h3 class="font-black text-xl mb-4 border-b pb-2">بەڕێوەبردنی خانەکان</h3>
-            <div id="fieldsList" class="space-y-2 mb-6 max-h-60 overflow-y-auto"></div>
-            <div class="flex gap-2">
-                <input type="text" id="newFieldName" placeholder="ناوی خانەی نوێ..." class="flex-1 p-3 bg-slate-100 rounded-xl outline-none font-bold">
-                <button onclick="addNewField()" class="px-4 bg-blue-600 text-white rounded-xl font-bold">زیادکردن</button>
-            </div>
-            <button onclick="closeModal('fieldsModal')" class="w-full mt-6 py-3 bg-slate-100 rounded-xl font-bold">داخستن</button>
-        </div>
-    </div>
-
-    <div id="formModal" class="fixed inset-0 bg-white hidden z-[70] flex flex-col">
-        <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
-            <button onclick="closeModal('formModal')" class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center"><i class="fas fa-times"></i></button>
-            <h3 class="font-black">تۆمارکردنی زانیاری</h3>
-            <div class="w-10"></div>
-        </div>
-        <div class="flex-1 overflow-y-auto p-6 space-y-4">
-            <input type="hidden" id="fId">
-            <div class="space-y-1">
-                <label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">لینکی وێنە</label>
-                <input type="text" id="fImg" placeholder="https://..." class="w-full p-4 bg-slate-100 rounded-2xl outline-none border-2 border-transparent focus:border-red-500 font-bold">
-            </div>
-            <div id="dynamicInputs" class="grid grid-cols-1 gap-4"></div>
-            <div class="space-y-1">
-                <label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">دەستە</label>
-                <select id="fPlatoon" class="w-full p-4 bg-slate-100 rounded-2xl outline-none font-bold border-2 border-transparent focus:border-red-500">
-                    <option value="دەستەی ١">دەستەی ١</option>
-                    <option value="دەستەی ٢">دەستەی ٢</option>
-                    <option value="دەستەی ٣">دەستەی ٣</option>
-                    <option value="تایبەت">تایبەت</option>
-                </select>
-            </div>
-            <button onclick="save()" class="w-full py-5 bg-red-600 text-white rounded-2xl font-black shadow-lg mt-4 active:scale-95 transition-all">پاشەکەوتکردن</button>
-        </div>
-    </div>
-
-    <div id="loginModal" class="fixed inset-0 bg-slate-900/90 hidden z-[200] flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-[40px] p-8 text-center shadow-2xl">
-            <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-800 text-2xl"><i class="fas fa-lock"></i></div>
-            <h3 class="text-xl font-black mb-6">چوونەژوورەوەی ئەدمین</h3>
-            <input type="password" id="adminPass" class="w-full p-4 bg-slate-50 border rounded-2xl text-center font-bold mb-6 outline-none focus:ring-2 focus:ring-slate-800">
-            <button onclick="checkLogin()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black active:scale-95 transition-all">تەئکیدکردن</button>
-            <button onclick="closeModal('loginModal')" class="mt-4 text-slate-400 font-bold">داخستن</button>
-        </div>
-    </div>
+    <div id="fieldsModal" class="fixed inset-0 bg-slate-900/95 hidden z-[110] flex items-center justify-center p-6"><div class="bg-white w-full max-w-md rounded-[35px] p-8 shadow-2xl"><h3 class="font-black text-xl mb-4 border-b pb-2">بەڕێوەبردنی خانەکان</h3><div id="fieldsList" class="space-y-2 mb-6 max-h-60 overflow-y-auto"></div><div class="flex gap-2"><input type="text" id="newFieldName" placeholder="ناوی خانەی نوێ..." class="flex-1 p-3 bg-slate-100 rounded-xl outline-none font-bold"><button onclick="addNewField()" class="px-4 bg-blue-600 text-white rounded-xl font-bold">زیادکردن</button></div><button onclick="closeModal('fieldsModal')" class="w-full mt-6 py-3 bg-slate-100 rounded-xl font-bold">داخستن</button></div></div>
+    <div id="formModal" class="fixed inset-0 bg-white hidden z-[105] flex flex-col"><div class="bg-slate-900 text-white p-5 flex justify-between items-center"><button onclick="closeModal('formModal')" class="w-10 h-10 bg-slate-800 rounded-xl"><i class="fas fa-times"></i></button><h3 class="font-black">تۆمارکردنی زانیاری</h3><div class="w-10"></div></div><div class="flex-1 overflow-y-auto p-6 space-y-4"><input type="hidden" id="fId"><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">لینکی وێنە</label><input type="text" id="fImg" placeholder="https://..." class="w-full p-4 bg-slate-100 rounded-2xl outline-none border-2 border-transparent focus:border-red-500 font-bold text-left"></div><div id="dynamicInputs" class="grid grid-cols-1 gap-4"></div><div class="space-y-1"><label class="text-[10px] font-bold text-slate-400 mr-2 uppercase">دەستە</label><select id="fPlatoon" class="w-full p-4 bg-slate-100 rounded-2xl outline-none font-bold border-2 border-transparent focus:border-red-500"><option value="دەستەی ١">دەستەی ١</option><option value="دەستەی ٢">دەستەی ٢</option><option value="دەستەی ٣">دەستەی ٣</option><option value="تایبەت">تایبەت</option></select></div><button onclick="save()" class="w-full py-5 bg-red-600 text-white rounded-2xl font-black shadow-lg mt-4 active:scale-95 transition-all">پاشەکەوتکردن</button></div></div>
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/90 hidden z-[200] flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-[40px] p-8 text-center shadow-2xl"><div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-800 text-2xl"><i class="fas fa-lock"></i></div><h3 class="text-xl font-black mb-6">چوونەژوورەوەی ئەدمین</h3><input type="password" id="adminPass" class="w-full p-4 bg-slate-50 border rounded-2xl text-center font-bold mb-6 outline-none focus:ring-2 focus:ring-slate-800"><button onclick="checkLogin()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black active:scale-95 transition-all">تەئکیدکردن</button><button onclick="closeModal('loginModal')" class="mt-4 text-slate-400 font-bold">داخستن</button></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAgz9dbzedRoyuhbg5lApgCtKF-jZxSozI",
@@ -129,7 +98,11 @@
 
         async function init() {
             await loadFields();
-            await fetchData();
+            // Real-time listener instead of one-time fetch
+            onSnapshot(mainColl, (snap) => {
+                window.localDb = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                filterList();
+            });
         }
 
         async function loadFields() {
@@ -151,26 +124,20 @@
             `).join('');
         }
 
-        async function fetchData() {
-            const snap = await getDocs(mainColl);
-            window.localDb = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            filterList();
-        }
-
         window.filterList = function() {
             const q = document.getElementById('search').value.toLowerCase();
             const pf = document.getElementById('platoonFilter').value;
             const list = document.getElementById('mainList');
             
             const filtered = window.localDb.filter(p => {
-                const searchMatch = (p.name?.toLowerCase().includes(q) || p.file?.includes(q));
+                const searchMatch = (p.name?.toLowerCase().includes(q) || p.file?.toString().includes(q));
                 const platoonMatch = (pf === "all" || p.platoon === pf);
                 return searchMatch && platoonMatch;
             });
 
             list.innerHTML = filtered.map(p => `
-                <div onclick="showProfile('${p.id}')" class="bg-white p-4 rounded-[25px] mb-3 shadow-sm flex items-center gap-4 border border-transparent active:scale-95 transition-all">
-                    <img src="${p.img || 'https://ui-avatars.com/api/?name='+p.name}" class="w-14 h-14 rounded-2xl object-cover bg-slate-100 shadow-sm">
+                <div onclick="showProfile('${p.id}')" class="bg-white p-4 rounded-[25px] mb-3 shadow-sm flex items-center gap-4 active:scale-95 transition-all border border-slate-50">
+                    <img src="${p.img ? p.img : 'https://ui-avatars.com/api/?name='+p.name}" class="w-14 h-14 rounded-2xl object-cover shadow-sm" onerror="this.src='https://ui-avatars.com/api/?name=User'">
                     <div class="flex-1">
                         <h3 class="font-black text-slate-800">${p.name || 'ناو نییە'}</h3>
                         <p class="text-[10px] text-red-500 font-bold uppercase">${p.rank || 'پلە نییە'} | ${p.platoon || 'بێ دەستە'}</p>
@@ -184,18 +151,36 @@
             const p = window.localDb.find(x => x.id === id);
             const content = document.getElementById('profileContent');
             
-            let fieldsHtml = window.fields.map(f => `
+            // Critical Fix: Force reload image source
+            const finalImg = p.img && p.img.length > 5 ? p.img : `https://ui-avatars.com/api/?background=random&name=${p.name}`;
+
+            let fieldsHtml = window.fields.map(f => {
+                if(f.label.includes("مووچە") || f.label.includes("موچه")) {
+                    return `
+                    <div class="wallet-card col-span-full mt-4">
+                        <div class="chip"></div>
+                        <div class="text-[10px] opacity-60 font-bold mb-1">MEMBER SALARY / ${f.label}</div>
+                        <div class="text-3xl font-black mb-6 tracking-tighter">${p[f.key] || '0'} <span class="text-sm font-normal opacity-50">IQD</span></div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-[11px] font-mono tracking-widest opacity-40 uppercase">${p.name}</div>
+                            <div class="text-[11px] font-bold text-red-500">9th DIV</div>
+                        </div>
+                    </div>`;
+                }
+                return `
                 <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                     <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">${f.label}</span>
                     <span class="font-black text-slate-700">${p[f.key] || '---'}</span>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
 
             content.innerHTML = `
-                <div class="text-center mb-8">
-                    <img src="${p.img || 'https://ui-avatars.com/api/?name='+p.name}" class="profile-img mx-auto mb-4 shadow-xl">
+                <div class="text-center mb-10">
+                    <div class="profile-img-box mb-4">
+                        <img src="${finalImg}" id="targetProfileImg" class="profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Error'">
+                    </div>
                     <h2 class="text-2xl font-black text-slate-800">${p.name || '---'}</h2>
-                    <span class="inline-block bg-red-50 text-red-600 px-4 py-1 rounded-full text-xs font-bold mt-2">${p.platoon}</span>
+                    <span class="inline-block bg-red-100 text-red-600 px-4 py-1 rounded-full text-[10px] font-black mt-2 uppercase">${p.platoon}</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     ${fieldsHtml}
@@ -213,38 +198,11 @@
             document.getElementById('profileModal').classList.remove('hidden');
         };
 
-        window.openManageFields = function() {
-            const list = document.getElementById('fieldsList');
-            list.innerHTML = window.fields.map((f, i) => `
-                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border">
-                    <span class="font-bold">${f.label}</span>
-                    <button onclick="removeField(${i})" class="text-red-500 px-2 hover:scale-125 transition-all"><i class="fas fa-trash"></i></button>
-                </div>
-            `).join('');
-            document.getElementById('fieldsModal').classList.remove('hidden');
-        };
-
-        window.addNewField = async function() {
-            const val = document.getElementById('newFieldName').value;
-            if(!val) return;
-            window.fields.push({ label: val, key: "k" + Date.now() });
-            await setDoc(doc(db, "Admin", "Fields"), { list: window.fields });
-            document.getElementById('newFieldName').value = "";
-            renderInputs(); openManageFields();
-        };
-
-        window.removeField = async function(i) {
-            if(confirm("دڵنیای لە سڕینەوە؟")) {
-                window.fields.splice(i, 1);
-                await setDoc(doc(db, "Admin", "Fields"), { list: window.fields });
-                renderInputs(); openManageFields();
-            }
-        };
-
         window.save = async function() {
             const id = document.getElementById('fId').value;
+            const imgVal = document.getElementById('fImg').value.trim();
             const data = { 
-                img: document.getElementById('fImg').value,
+                img: imgVal,
                 platoon: document.getElementById('fPlatoon').value 
             };
             document.querySelectorAll('.dynamic-input').forEach(input => {
@@ -254,35 +212,33 @@
             if(id) await updateDoc(doc(db, "SariyaListDB", id), data);
             else await addDoc(mainColl, data);
 
-            closeAllModals(); fetchData();
+            closeAllModals();
         };
 
+        // Standard Utility Functions
+        window.openManageFields = function() {
+            const list = document.getElementById('fieldsList');
+            list.innerHTML = window.fields.map((f, i) => `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border"><span class="font-bold">${f.label}</span><button onclick="removeField(${i})" class="text-red-500 px-2"><i class="fas fa-trash"></i></button></div>`).join('');
+            document.getElementById('fieldsModal').classList.remove('hidden');
+        };
+        window.addNewField = async function() {
+            const val = document.getElementById('newFieldName').value; if(!val) return;
+            window.fields.push({ label: val, key: "k" + Date.now() });
+            await setDoc(doc(db, "Admin", "Fields"), { list: window.fields });
+            document.getElementById('newFieldName').value = ""; renderInputs(); openManageFields();
+        };
+        window.removeField = async function(i) {
+            if(confirm("دڵنیای؟")) { window.fields.splice(i, 1); await setDoc(doc(db, "Admin", "Fields"), { list: window.fields }); renderInputs(); openManageFields(); }
+        };
         window.editPerson = (id) => {
-            const p = window.localDb.find(x => x.id === id);
-            closeModal('profileModal');
-            document.getElementById('fId').value = p.id;
-            document.getElementById('fImg').value = p.img || "";
+            const p = window.localDb.find(x => x.id === id); closeModal('profileModal');
+            document.getElementById('fId').value = p.id; document.getElementById('fImg').value = p.img || "";
             document.getElementById('fPlatoon').value = p.platoon || "دەستەی ١";
-            document.querySelectorAll('.dynamic-input').forEach(input => {
-                input.value = p[input.dataset.key] || "";
-            });
+            document.querySelectorAll('.dynamic-input').forEach(input => { input.value = p[input.dataset.key] || ""; });
             document.getElementById('formModal').classList.remove('hidden');
         };
-
-        window.deletePerson = async (id) => {
-            if(confirm("دڵنیای؟")) { await deleteDoc(doc(db, "SariyaListDB", id)); closeModal('profileModal'); fetchData(); }
-        };
-
-        window.checkLogin = () => {
-            if(document.getElementById('adminPass').value === "12345") {
-                window.isAdmin = true;
-                document.getElementById('adminPanel').classList.remove('hidden');
-                document.getElementById('loginBtn').classList.add('hidden');
-                closeModal('loginModal');
-                filterList();
-            } else alert("هەڵەیە");
-        };
-
+        window.deletePerson = async (id) => { if(confirm("دڵنیای؟")) { await deleteDoc(doc(db, "SariyaListDB", id)); closeModal('profileModal'); } };
+        window.checkLogin = () => { if(document.getElementById('adminPass').value === "12345") { window.isAdmin = true; document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('loginBtn').classList.add('hidden'); closeModal('loginModal'); filterList(); } else alert("هەڵەیە"); };
         window.logout = () => { window.isAdmin = false; location.reload(); };
         window.openForm = () => { document.getElementById('fId').value = ""; document.querySelectorAll('.dynamic-input, #fImg').forEach(i => i.value = ""); document.getElementById('formModal').classList.remove('hidden'); };
         window.openLogin = () => document.getElementById('loginModal').classList.remove('hidden');
